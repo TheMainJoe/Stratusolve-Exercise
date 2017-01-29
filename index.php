@@ -26,13 +26,13 @@
                 <h4 class="modal-title" id="myModalLabel">Modal title</h4>
             </div>
             <div class="modal-body">
-                <form action="update_task.php" method="post">
+                <form id="task">
                     <div class="row">
                         <div class="col-md-12" style="margin-bottom: 5px;;">
-                            <input id="InputTaskName" type="text" placeholder="Task Name" class="form-control">
+                            <input id="InputTaskName" name="TaskName" type="text" placeholder="Task Name" class="form-control">
                         </div>
                         <div class="col-md-12">
-                            <textarea id="InputTaskDescription" placeholder="Description" class="form-control"></textarea>
+                            <textarea id="InputTaskDescription" name="TaskDescription" placeholder="Description" class="form-control"></textarea>
                         </div>
                     </div>
                 </form>
@@ -83,27 +83,58 @@
 <script type="text/javascript" src="assets/js/jquery-1.12.3.min.js"></script>
 <script type="text/javascript" src="assets/js/bootstrap.min.js"></script>
 <script type="text/javascript">
+    var action;
+    var id;
     $('#myModal').on('show.bs.modal', function (event) {
         var triggerElement = $(event.relatedTarget); // Element that triggered the modal
         var modal = $(this);
         if (triggerElement.attr("id") == 'newTask') {
             modal.find('.modal-title').text('New Task');
             $('#deleteTask').hide();
+            action = "create";
         } else {
+            id = triggerElement.attr("id");
+            $.get( 'update_task.php', 'task='+triggerElement.attr("id"), function(ret){
+                
+            });
             modal.find('.modal-title').text('Task details');
             $('#deleteTask').show();
+            action = "update";
             console.log('Task ID: '+triggerElement.attr("id"));
         }
     });
+    
+    $.get( 'update_task.php', 'tasks=tasks', function(ret){  
+        $('#TaskList').html('');      
+        $.each(ret, function(i,v){
+
+            $('#TaskList').append( '<a id="'+v.TaskId+'" href="#" class="list-group-item" data-toggle="modal" data-target="#myModal"><h4 class="list-group-item-heading">'+v.TaskName+'</h4><p class="list-group-item-text">'+v.TaskDescription+'</p></a>' );
+        });
+    },'json');
+
     $('#saveTask').click(function() {
         //Assignment: Implement this functionality
-        alert('You clicked save! Now implement this functionality.');
-        $('#myModal').modal('hide');
+        var frm = $('#task').serialize();
+        $.post('update_task.php', frm + '&action='+action, function(ret){
+           
+        }).done(function(){
+            $('#myModal').modal('hide');
+            location.reload();
+        });
+        //alert('You clicked save! Now implement this functionality.');
+        
     });
+
     $('#deleteTask').click(function() {
         //Assignment: Implement this functionality
-        alert('You clicked delete! Now implement this functionality.');
-        $('#myModal').modal('hide');
+        //alert('You clicked delete! Now implement this functionality.');
+        
+        $.post('update_task.php', 'action=delete&id='+id, function(ret){            
+            
+        }).done(function(){
+            $('#myModal').modal('hide');
+            location.reload();
+        });
     });
 </script>
 </html>
